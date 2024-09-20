@@ -64,7 +64,13 @@ ssh -f -N -p 30110 -L 8123:localhost:8123 henry.cho@ssh-nipahpc.kubeflow.kakaocl
 
 
 
-### 옵션 요약
+※ ssh연결 포드포워딩 세션이 자꾸 끊어지는이슈
+
+해결 방안 = ssh -o ServerAliveInterval=60 (명령어에 옵션추가)&#x20;
+
+
+
+## 옵션 요약
 
 #### 1. **`-f` (background)**
 
@@ -83,3 +89,78 @@ ssh -f -N -p 30110 -L 8123:localhost:8123 henry.cho@ssh-nipahpc.kubeflow.kakaocl
 * **설명**: 원격 서버의 **SSH 포트 번호**를 지정하는 옵션입니다. 기본 SSH 포트는 `22`이지만, 다른 포트 번호를 사용할 경우 이 옵션을 통해 지정할 수 있습니다.
 * **사용 목적**: 만약 SSH 서버가 기본 포트(`22`)가 아닌 다른 포트에서 실행 중이라면, 이 옵션으로 해당 포트 번호를 지정하여 연결할 수 있습니다.
 * **예시**: `-p 2222`를 사용하면, SSH 서버가 2222번 포트에서 대기하고 있는 서버에 접속합니다
+
+`-o` 옵션은 SSH에서 **추가적인 구성 옵션**을 지정할 때 사용됩니다. SSH 클라이언트의 동작을 더 세밀하게 조정하기 위해 다양한 설정을 전달할 수 있으며, 각 설정은 `"옵션=값"` 형식으로 입력합니다.
+
+#### 4. **`-o` (추가적인 구성 옵션 지정)**
+
+1\. `ServerAliveInterval`
+
+* **설명**: 클라이언트가 서버에 주기적으로 패킷을 보내서 유휴 상태로 인한 연결 끊김을 방지합니다.
+*   **사용 예**:
+
+    ```bash
+    ssh -o ServerAliveInterval=60 user@remote-server
+    ```
+
+    60초마다 서버에 패킷을 보내 세션이 끊기지 않도록 합니다.
+
+2\. `ServerAliveCountMax`
+
+* **설명**: 서버에서 응답이 없을 때, 몇 번의 시도 후에 연결을 끊을지 설정합니다.
+*   **사용 예**:
+
+    ```bash
+    ssh -o ServerAliveCountMax=3 user@remote-server
+    ```
+
+    서버 응답이 없을 때 3번 시도 후 연결을 종료합니다.
+
+3\. `StrictHostKeyChecking`
+
+* **설명**: SSH가 원격 서버의 호스트 키를 확인하는 방법을 지정합니다. 기본적으로 처음 연결할 때 확인을 요청하지만, 이를 강제로 허용 또는 거부할 수 있습니다.
+*   **사용 예**:
+
+    ```bash
+    ssh -o StrictHostKeyChecking=no user@remote-server
+    ```
+
+    서버의 호스트 키 확인을 건너뛰고 바로 연결을 허용합니다.
+
+4\. `UserKnownHostsFile`
+
+* **설명**: SSH 클라이언트가 사용할 **호스트 키 파일**을 지정합니다.
+*   **사용 예**:
+
+    ```bash
+    ssh -o UserKnownHostsFile=/dev/null user@remote-server
+    ```
+
+    호스트 키를 저장하지 않도록 설정하여, 키 확인 없이 연결을 시도합니다.
+
+5\. `LogLevel`
+
+* **설명**: SSH 클라이언트의 로그 수준을 설정합니다. 예를 들어, **`QUIET`**, **`ERROR`**, **`INFO`**, **`DEBUG`** 등 다양한 수준을 지정할 수 있습니다.
+*   **사용 예**:
+
+    ```bash
+    ssh -o LogLevel=QUIET user@remote-server
+    ```
+
+    SSH 연결 중에 로그 출력을 최소화합니다.
+
+***
+
+#### `-o` 옵션의 예시:
+
+```bash
+ssh -o ServerAliveInterval=60 -o StrictHostKeyChecking=no -p 2222 user@remote-server
+```
+
+이 명령어는:
+
+* 60초마다 서버에 패킷을 보내서 연결이 끊기지 않도록 하고,
+* 서버의 호스트 키 확인을 건너뛰며,
+* 2222번 포트로 SSH 연결을 시도합니다.
+
+`-o` 옵션은 다양한 SSH 설정을 명령어에 직접 전달할 수 있어서, SSH 연결을 세부적으로 제어하고 싶을 때 유용합니다.
